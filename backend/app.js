@@ -31,6 +31,7 @@ const skillGapRoutes = require("./routes/skillGapRoutes");
 const roadmapRoutes = require("./routes/roadmapRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const readinessRoutes = require("./routes/readinessRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
@@ -38,6 +39,7 @@ app.use("/api/skill-gap", skillGapRoutes);
 app.use("/api/roadmap", roadmapRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/readiness", readinessRoutes);
+app.use("/api/ai", aiRoutes);
 app.get("/", (req, res) => {
     res.json({
         success: true,
