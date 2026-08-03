@@ -1,17 +1,13 @@
-const express = require("express");
+require("dotenv").config();
 
-// Create Express application
-const app = express();
+const app = require("./app");
+const connectDB = require("./config/db");
 
-// Server Port
-const PORT = 5000;
+// Connect Database
+connectDB();
 
-// Home Route
-app.get("/", (req, res) => {
-  res.send("🚀 Welcome to SkillVerse Backend");
-});
+const PORT = process.env.PORT || 5000;
 
-// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
