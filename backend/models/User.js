@@ -22,23 +22,27 @@ const userSchema = new mongoose.Schema(
         },
 
         education: {
-            degree: {
-                type: String,
-                default: ""
-            },
-            branch: {
-                type: String,
-                default: ""
-            },
-            college: {
-                type: String,
-                default: ""
-            },
-            graduationYear: {
-                type: Number,
-                default: null
-            }
-        },
+    degree: {
+        type: String,
+        default: ""
+    },
+    branch: {
+        type: String,
+        default: ""
+    },
+    college: {
+        type: String,
+        default: ""
+    },
+    graduationYear: {
+        type: Number,
+        default: null
+    },
+    cgpa: {
+        type: Number,
+        default: null
+    }
+},
 
         skills: {
             type: [String],
@@ -61,15 +65,52 @@ const userSchema = new mongoose.Schema(
             default: "Beginner"
         },
 
-        projects: {
+      projects: [
+    {
+        title: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        description: {
+            type: String,
+            default: ""
+        },
+        technologies: {
             type: [String],
             default: []
         },
-
-        certifications: {
-            type: [String],
-            default: []
+        github: {
+            type: String,
+            default: ""
+        },
+        liveDemo: {
+            type: String,
+            default: ""
         }
+    }
+],
+
+certifications: [
+    {
+        name: {
+            type: String,
+            default: ""
+        },
+        issuer: {
+            type: String,
+            default: ""
+        },
+        year: {
+            type: Number,
+            default: null
+        },
+        certificateUrl: {
+            type: String,
+            default: ""
+        }
+    }
+],
     },
     {
         timestamps: true

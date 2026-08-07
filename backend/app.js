@@ -32,6 +32,8 @@ const roadmapRoutes = require("./routes/roadmapRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const readinessRoutes = require("./routes/readinessRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
@@ -40,6 +42,9 @@ app.use("/api/roadmap", roadmapRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/readiness", readinessRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/resume", resumeRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+
 app.get("/", (req, res) => {
     res.json({
         success: true,

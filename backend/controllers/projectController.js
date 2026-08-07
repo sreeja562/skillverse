@@ -1,121 +1,118 @@
 const User = require("../models/User");
 
-const projects = [
-    {
-        title: "AI Resume Analyzer",
-        description: "Analyze a student's resume and identify missing skills.",
-        skills: ["Python", "LLM", "REST API"],
-        difficulty: "Intermediate",
-        career: ["AI Platform Engineer", "Full Stack Developer"]
-    },
-    {
-        title: "Student Skill Gap Analyzer",
-        description: "Compare student skills with career requirements.",
-        skills: ["Python", "Machine Learning", "REST API", "MongoDB"],
-        difficulty: "Intermediate",
-        career: ["AI Platform Engineer", "Data Scientist"]
-    },
-    {
-        title: "AI Chatbot with RAG",
-        description: "Build a chatbot that answers questions using uploaded documents.",
-        skills: ["Python", "LLM", "Vector Database", "RAG"],
-        difficulty: "Advanced",
-        career: ["AI Platform Engineer"]
-    },
-    {
-        title: "Cloud Deployment Platform",
-        description: "Deploy a full-stack application using Docker and AWS.",
-        skills: ["Docker", "AWS", "REST API", "Git"],
-        difficulty: "Advanced",
-        career: ["AI Platform Engineer", "Cloud Engineer"]
-    },
-    {
-        title: "Job Recommendation System",
-        description: "Recommend suitable jobs based on student skills.",
-        skills: ["Python", "Machine Learning", "MongoDB", "REST API"],
-        difficulty: "Advanced",
-        career: ["Data Scientist", "AI Platform Engineer"]
-    },
-    {
-        title: "Full Stack Task Manager",
-        description: "Build a complete task management application.",
-        skills: ["React", "Node.js", "Express.js", "MongoDB", "REST API"],
-        difficulty: "Beginner",
-        career: ["Full Stack Developer"]
-    },
-    {
-        title: "Student Performance Predictor",
-        description: "Predict student performance using machine learning.",
-        skills: ["Python", "Machine Learning", "Pandas", "Scikit-learn"],
-        difficulty: "Intermediate",
-        career: ["Data Scientist"]
-    }
-];
-
-
-const recommendProjects = async (req, res) => {
+// Get all projects
+const getProjects = async (req, res) => {
     try {
-
         const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-
-        const studentSkills = user.skills.map(skill =>
-            skill.toLowerCase().trim()
-        );
-
-        const careerGoal = user.careerGoal;
-
-        const recommendations = projects
-            .filter(project =>
-                project.career.includes(careerGoal)
-            )
-            .map(project => {
-
-                const matchingSkills = project.skills.filter(skill =>
-                    studentSkills.includes(skill.toLowerCase())
-                );
-
-                const missingSkills = project.skills.filter(skill =>
-                    !studentSkills.includes(skill.toLowerCase())
-                );
-
-                return {
-                    ...project,
-                    matchingSkills,
-                    missingSkills,
-
-                    relevanceScore:
-                        Math.round(
-                            (matchingSkills.length / project.skills.length) * 100
-                        )
-                };
-            })
-            .sort((a, b) =>
-                b.relevanceScore - a.relevanceScore
-            );
 
         res.status(200).json({
             success: true,
-            careerGoal,
-            recommendations
+            projects: user.projects
         });
 
     } catch (error) {
-
-        console.error(error);
-
         res.status(500).json({
-            message: "Failed to recommend projects"
+            success: false,
+            message: error.message
         });
     }
 };
 
+// Add new project
+const addProject = async (req, res) => {
+    try {
+
+        const user = await User.findById(req.user.id);
+
+        user.projects.push(req.body);
+
+        await user.save();
+
+        res.status(201).json({
+            success: true,
+            message: "Project added successfully",
+            projects: user.projects
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// Update Project
+const updateProject = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        const project = user.projects.id(req.params.projectId);
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found"
+            });
+        }
+
+        project.title = req.body.title;
+        project.description = req.body.description;
+        project.technologies = req.body.technologies;
+        project.github = req.body.github;
+        project.liveDemo = req.body.liveDemo;
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Project updated successfully",
+            projects: user.projects
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// Delete Project
+const deleteProject = async (req, res) => {
+
+    try {
+
+        const user = await User.findById(req.user.id);
+
+        user.projects.pull(req.params.projectId);
+
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Project deleted successfully",
+            projects: user.projects
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
 
 module.exports = {
-    recommendProjects
+    getProjects,
+    addProject,
+    updateProject,
+    deleteProject
 };
