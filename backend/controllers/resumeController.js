@@ -1,104 +1,134 @@
-const { InferenceClient } = require("@huggingface/inference");
-const User = require("../models/User");
+const fs = require("fs");
+const path = require("path");
+const pdfParse = require("pdf-parse");
 
-const client = new InferenceClient(process.env.HF_TOKEN);
+const { analyzeResume } = require("../services/aiResumeService");
+const Resume = require("../models/Resume");
 
-const analyzeResume = async (req, res) => {
+// Upload Resume
+const uploadResume = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select("-password");
 
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
-        }
-
-        const { resumeText } = req.body;
-
-        if (!resumeText) {
+        if (!req.file) {
             return res.status(400).json({
-                message: "Please provide resume text"
+                success: false,
+                message: "Please upload a PDF resume"
             });
         }
 
-        const prompt = `
-You are SkillVerse AI Resume Analyzer.
+        const filePath = path.join(
+            __dirname,
+            "..",
+            "uploads",
+            req.file.filename
+        );
 
-Analyze this student's resume according to their target career.
+        console.log("========== RESUME DEBUG ==========");
+        console.log("File Name:", req.file.filename);
+        console.log("File Path:", filePath);
+        console.log("File Exists:", fs.existsSync(filePath));
 
-Student Profile:
-Name: ${user.name || "Not provided"}
-Education: ${JSON.stringify(user.education) || "Not provided"}
-Current Skills: ${user.skills?.join(", ") || "Not provided"}
-Career Goal: ${user.careerGoal || "Not provided"}
-Experience Level: ${user.experienceLevel || "Beginner"}
-Projects: ${user.projects?.join(", ") || "None"}
-Certifications: ${user.certifications?.join(", ") || "None"}
+        const pdfBuffer = fs.readFileSync(filePath);
 
-RESUME:
-${resumeText}
+        console.log("Buffer Size:", pdfBuffer.length);
 
-Analyze the resume and provide:
+        // Extract PDF Text
+        const pdfData = await pdfParse(pdfBuffer);
+        const extractedText = pdfData.text;
 
-1. Resume Score: Give a score from 0-100.
+        console.log("Extracted Characters:", extractedText.length);
 
-2. Strengths:
-List the strongest parts of the resume.
+        // AI Analysis
+        const analysis = await analyzeResume(extractedText);
 
-3. Weaknesses:
-List areas that need improvement.
-
-4. Missing Skills:
-Identify important skills missing for the student's target career.
-
-5. Project Suggestions:
-Suggest projects that would strengthen the resume.
-
-6. Improvement Suggestions:
-Give specific improvements to the resume.
-
-7. Career Recommendation:
-Explain how well the resume matches the student's target career.
-
-Keep the response practical and suitable for a college student/fresher.
-Do not give generic advice.
-`;
-
-        const response = await client.chatCompletion({
-            model: "meta-llama/Llama-3.1-8B-Instruct",
-
-            messages: [
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ],
-
-            max_tokens: 700,
-            temperature: 0.7
+        // Save Resume
+        const resume = await Resume.create({
+            user: req.user.id,
+            fileName: req.file.filename,
+            extractedText,
+            analysis: {
+                score: analysis.score,
+                strengths: analysis.strengths,
+                weaknesses: analysis.weaknesses,
+                suggestions: analysis.suggestions
+            }
         });
 
-        const analysis =
-            response.choices?.[0]?.message?.content ||
-            "Sorry, I could not analyze the resume.";
-
-        res.status(200).json({
+        return res.status(201).json({
             success: true,
-            careerGoal: user.careerGoal,
-            analysis
+            message: "Resume uploaded and analyzed successfully",
+            resume
         });
 
     } catch (error) {
 
-        console.error("Resume Analyzer Error:", error);
+        console.error("Resume Upload Error:");
+        console.error(error);
 
-        res.status(500).json({
-            message: "Resume analysis failed",
-            error: error.message
+        return res.status(500).json({
+            success: false,
+            message: error.message
         });
+
+    }
+};
+
+// Get All Resumes
+const getMyResumes = async (req, res) => {
+    try {
+
+        const resumes = await Resume.find({
+            user: req.user.id
+        }).sort({ createdAt: -1 });
+
+        return res.json({
+            success: true,
+            resumes
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+// Get Resume By ID
+const getResumeById = async (req, res) => {
+    try {
+
+        const resume = await Resume.findOne({
+            _id: req.params.id,
+            user: req.user.id
+        });
+
+        if (!resume) {
+            return res.status(404).json({
+                success: false,
+                message: "Resume not found"
+            });
+        }
+
+        return res.json({
+            success: true,
+            resume
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
     }
 };
 
 module.exports = {
-    analyzeResume
+    uploadResume,
+    getMyResumes,
+    getResumeById
 };

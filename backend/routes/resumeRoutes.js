@@ -1,13 +1,24 @@
 const express = require("express");
-
-const {
-    analyzeResume
-} = require("../controllers/resumeController");
-
-const protect = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-router.post("/analyze", protect, analyzeResume);
+const authMiddleware = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
+
+const {
+    uploadResume,
+    getMyResumes,
+    getResumeById
+} = require("../controllers/resumeController");
+
+router.post(
+    "/upload",
+    authMiddleware,
+    upload.single("resume"),
+    uploadResume
+);
+
+router.get("/", authMiddleware, getMyResumes);
+
+router.get("/:id", authMiddleware, getResumeById);
 
 module.exports = router;
