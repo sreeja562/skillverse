@@ -1,136 +1,60 @@
 const User = require("../models/User");
+const Resume = require("../models/Resume");
 
-// Career skill requirements
-const careerSkills = {
-    "AI Platform Engineer": [
-        "Python",
-        "Machine Learning",
-        "Deep Learning",
-        "LLM",
-        "Prompt Engineering",
-        "Docker",
-        "Kubernetes",
-        "AWS",
-        "Git",
-        "SQL",
-        "REST API"
-    ],
-
-    "Full Stack Developer": [
-        "HTML",
-        "CSS",
-        "JavaScript",
-        "React",
-        "Node.js",
-        "Express.js",
-        "MongoDB",
-        "SQL",
-        "Git",
-        "REST API"
-    ],
-
-    "Data Scientist": [
-        "Python",
-        "SQL",
-        "Statistics",
-        "Pandas",
-        "NumPy",
-        "Machine Learning",
-        "Data Visualization",
-        "Scikit-learn"
-    ],
-
-    "Cloud Engineer": [
-        "Linux",
-        "Networking",
-        "AWS",
-        "Docker",
-        "Kubernetes",
-        "Terraform",
-        "Git",
-        "CI/CD"
-    ]
-};
-
+const {
+    analyzeSkillGap
+} = require("../services/skillGapService");
 
 const detectSkillGap = async (req, res) => {
     try {
 
-        // Get logged-in student
-        const user = await User.findById(req.user.id);
+        const user = await User
+            .findById(req.user.id)
+            .select("-password");
 
         if (!user) {
             return res.status(404).json({
+                success: false,
                 message: "User not found"
             });
         }
 
-        const careerGoal = user.careerGoal;
+        const resume = await Resume
+            .findOne({
+                user: req.user.id
+            })
+            .sort({
+                createdAt: -1
+            });
 
-        // Check career
-        if (!careerSkills[careerGoal]) {
-            return res.status(400).json({
-                message: "Career goal not supported yet",
-                supportedCareers: Object.keys(careerSkills)
+        if (!resume) {
+            return res.status(404).json({
+                success: false,
+                message: "Please upload a resume first"
             });
         }
 
-        // Student skills
-        const studentSkills = user.skills.map(skill =>
-            skill.toLowerCase().trim()
-        );
+        const result = await analyzeSkillGap({
+            skills: user.skills || [],
+            careerGoal: user.careerGoal || "",
+            resumeText: resume.extractedText || ""
+        });
 
-        // Required skills
-        const requiredSkills = careerSkills[careerGoal];
-
-        // Find missing skills
-        const missingSkills = requiredSkills.filter(skill =>
-            !studentSkills.includes(skill.toLowerCase())
-        );
-
-        // Find skills already known
-        const matchedSkills = requiredSkills.filter(skill =>
-            studentSkills.includes(skill.toLowerCase())
-        );
-
-        // Calculate readiness
-        const readinessScore = Math.round(
-            (matchedSkills.length / requiredSkills.length) * 100
-        );
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-
-            careerGoal,
-
-            currentSkills: user.skills,
-
-            requiredSkills,
-
-            matchedSkills,
-
-            missingSkills,
-
-            readinessScore,
-
-            message:
-                readinessScore >= 80
-                    ? "You are highly prepared for this career."
-                    : readinessScore >= 50
-                    ? "You have a good foundation but need to improve some skills."
-                    : "You have significant skill gaps to work on."
+            skillGap: result
         });
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Skill Gap Error:", error);
 
-        res.status(500).json({
-            message: "Skill gap detection failed"
+        return res.status(500).json({
+            success: false,
+            message: error.message
         });
     }
 };
-
 
 module.exports = {
     detectSkillGap

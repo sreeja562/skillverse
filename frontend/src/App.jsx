@@ -5,28 +5,85 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import SkillGap from "./pages/SkillGap";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
+import Roadmap from "./pages/Roadmap";
+import Projects from "./pages/Projects";
+import AIMentor from "./pages/AIMentor";
+import AIInterviewRoom from "./pages/AIInterviewRoom";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
 
-                <Route path="/" element={<Login />} />
+                {/* Authentication */}
+                <Route
+                    path="/"
+                    element={<Login />}
+                />
 
-                <Route path="/register" element={<Register />} />
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
 
-                <Route path="/dashboard" element={<Dashboard />} />
+                {/* Main pages */}
+                <Route
+                    path="/dashboard"
+                    element={<Dashboard />}
+                />
 
-                <Route path="*" element={<NotFound />} />
+                <Route
+                    path="/profile"
+                    element={<Profile />}
+                />
 
-                <Route path="/profile" element={<Profile />} />
+                <Route
+                    path="/resume"
+                    element={<ResumeAnalyzer />}
+                />
 
-                
-<Route path="/skill-gap" element={<h1>Skill Gap</h1>} />
-<Route path="/roadmap" element={<h1>Roadmap</h1>} />
-<Route path="/projects" element={<h1>Projects</h1>} />
-<Route path="/mentor" element={<h1>AI Mentor</h1>} />
-<Route path="/resume" element={<h1>Resume Analyzer</h1>} />
+                {/* AI Features */}
+                <Route
+                    path="/skill-gap"
+                    element={<SkillGap />}
+                />
+
+                <Route
+                    path="/roadmap"
+                    element={<Roadmap />}
+                />
+
+                {/* Projects */}
+                <Route
+                    path="/projects"
+                    element={<Projects />}
+                />
+
+                {/* AI Mentor */}
+                <Route
+                    path="/mentor"
+                    element={<AIMentor />}
+                />
+
+                {/* AI Mock Interview */}
+                <Route
+                    path="/mock-interview"
+                    element={<AIInterviewRoom />}
+                />
+
+                {/* Direct AI Interview URL */}
+                <Route
+                    path="/ai-interview"
+                    element={<AIInterviewRoom />}
+                />
+
+                {/* 404 */}
+                <Route
+                    path="*"
+                    element={<NotFound />}
+                />
 
             </Routes>
         </BrowserRouter>

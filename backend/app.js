@@ -31,17 +31,20 @@ const skillGapRoutes = require("./routes/skillGapRoutes");
 const roadmapRoutes = require("./routes/roadmapRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const readinessRoutes = require("./routes/readinessRoutes");
-const aiRoutes = require("./routes/aiRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const mentorRoutes = require("./routes/mentorRoutes");
 
+app.use("/api/mentor", mentorRoutes);
+console.log("✅ MENTOR ROUTES REGISTERED");
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/skill-gap", skillGapRoutes);
 app.use("/api/roadmap", roadmapRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/readiness", readinessRoutes);
-app.use("/api/ai", aiRoutes);
+app.use("/api/interview", interviewRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 

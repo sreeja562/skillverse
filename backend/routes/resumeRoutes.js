@@ -7,9 +7,11 @@ const upload = require("../middleware/uploadMiddleware");
 const {
     uploadResume,
     getMyResumes,
-    getResumeById
+    getResumeById,
+    getResumeAnalytics
 } = require("../controllers/resumeController");
 
+// Upload resume
 router.post(
     "/upload",
     authMiddleware,
@@ -17,8 +19,25 @@ router.post(
     uploadResume
 );
 
-router.get("/", authMiddleware, getMyResumes);
+// Resume analytics
+router.get(
+    "/analytics",
+    authMiddleware,
+    getResumeAnalytics
+);
 
-router.get("/:id", authMiddleware, getResumeById);
+// Get all resumes
+router.get(
+    "/",
+    authMiddleware,
+    getMyResumes
+);
+
+// Get one resume
+router.get(
+    "/:id",
+    authMiddleware,
+    getResumeById
+);
 
 module.exports = router;

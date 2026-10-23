@@ -1,13 +1,18 @@
 const express = require("express");
 
-const {
-    calculateReadiness
-} = require("../controllers/readinessController");
-
-const protect = require("../middleware/authMiddleware");
-
 const router = express.Router();
 
-router.get("/", protect, calculateReadiness);
+const protect =
+    require("../middleware/authMiddleware");
+
+const {
+    getReadiness
+} = require("../controllers/readinessController");
+
+router.get(
+    "/",
+    protect,
+    getReadiness
+);
 
 module.exports = router;
